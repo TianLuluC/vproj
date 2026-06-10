@@ -55,43 +55,25 @@ class SafetyPipeline:
 
     def _inference_loop(self):
         no_frame_cnt = 0
-        # test = 0
         while not self.stop_event.is_set():
             try:
                 frame = self.stream_mgr.frame_queue.get(timeout=1.0)
                 no_frame_cnt = 0
             except Empty:
                 no_frame_cnt += 1
-                if no_frame_cnt > 30:
-                    logger.error("30秒未收到视频流，强制重启推拉流服务...")
-                    self.stream_mgr._init_reader()
-                    no_frame_cnt = 0
+                if no_frame_cnt >= 180:
+                    logger.error("🚨 超过 3 分钟未接收到任何视频流！触发超时，程序直接强制自杀结束。")
+                    self.stop_event.set()
+                    self.stream_mgr.release()
+                    os._exit(1)
+                elif no_frame_cnt % 10 == 0:
+                    logger.warning(f"已 {no_frame_cnt} 秒未收到视频流，等待底层网络自愈...")
                 continue
 
-            # # --- 花屏防御屏障 ---
-            # is_bad = False
-            # if self.last_good_frame is not None and frame.shape == self.last_good_frame.shape:
-            #     if is_bad_frame(frame, self.last_good_frame):
-            #         is_bad = True
-            #     else:
-            #         self.last_good_frame = frame.copy()
-            # else:
-            #     self.last_good_frame = frame.copy()
-
-            # --- 推理与渲染 ---
             detect_flag = False
             cls_ids = []
             
-            # if not is_bad:
-            #     # 只在健康帧进行 AI 检测
-            #     image_raw, detect_flag, cls_ids = self.detector.infer(frame, self.roi_coords)
-            #     print(f"test: {test}")
-            #     test += 1
-            # else:
-            #     image_raw = frame.copy()
-            image_raw, detect_flag, cls_ids = self.detector.infer(frame, self.roi_coords)
-            # print(f"帧序列: {test} | AI是否检测到违规: {detect_flag} | 目标类别: {cls_ids} | 报警累加器: {self.alert_mgr.alert_counter}")
-            # test += 1            
+            image_raw, detect_flag, cls_ids = self.detector.infer(frame, self.roi_coords)         
             img_resized = cv2.resize(image_raw, (640, 360))
             img_pil = Image.fromarray(img_resized)
             draw = ImageDraw.Draw(img_pil)
