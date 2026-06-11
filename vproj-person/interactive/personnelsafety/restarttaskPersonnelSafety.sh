@@ -36,6 +36,7 @@ fi
 
 if [ -f "$PROJECT_HOST_PATH/nohup.out" ]; then
     rm -f "$PROJECT_HOST_PATH/nohup.out"
+    rm -f "$PROJECT_HOST_PATH/log"
     echo "Old nohup.out removed from host."
 fi
 
