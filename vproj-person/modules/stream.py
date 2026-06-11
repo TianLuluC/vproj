@@ -23,6 +23,7 @@ class StreamManager:
             '-pixel_format', 'bgr24', '-video_size', '640x360', '-i', '-',
             '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency',
             '-b:v', '800k', '-bufsize', '2M', '-rtbufsize', '4M',
+            '-g', '25',
             '-pix_fmt', 'yuv420p', '-flvflags', 'no_duration_filesize', '-f', 'flv', self.cfg.RTMP_PATH
         ]
 
@@ -42,6 +43,8 @@ class StreamManager:
                 ffmpeg.input(self.cfg.RTSP_ADDRESS, 
                              rtsp_transport='tcp', 
                              rtbufsize='10M',
+                             flags='low_delay',  # 开启低延迟解码模式
+                             fflags='nobuffer'),  # 禁用输入层缓冲，丢包直接抛弃不产生灰屏
                              stimeout='5000000') 
                 .output('pipe:', format='rawvideo', pix_fmt='bgr24', vf="scale=640:360", loglevel='quiet')
                 .run_async(pipe_stdout=True)
