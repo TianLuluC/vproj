@@ -23,7 +23,7 @@ class StreamManager:
             '-pixel_format', 'bgr24', '-video_size', '640x360', '-i', '-',
             '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'zerolatency',
             '-b:v', '800k', '-bufsize', '2M', '-rtbufsize', '4M',
-            '-g', '25',
+            '-g', '25', '-crf', '28',
             '-pix_fmt', 'yuv420p', '-flvflags', 'no_duration_filesize', '-f', 'flv', self.cfg.RTMP_PATH
         ]
 
