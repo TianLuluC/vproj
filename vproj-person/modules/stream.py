@@ -44,7 +44,7 @@ class StreamManager:
                              rtsp_transport='tcp', 
                              rtbufsize='10M',
                              flags='low_delay',  # 开启低延迟解码模式
-                             fflags='nobuffer'),  # 禁用输入层缓冲，丢包直接抛弃不产生灰屏
+                             fflags='nobuffer',  # 禁用输入层缓冲，丢包直接抛弃不产生灰屏
                              stimeout='5000000') 
                 .output('pipe:', format='rawvideo', pix_fmt='bgr24', vf="scale=640:360", loglevel='quiet')
                 .run_async(pipe_stdout=True)
